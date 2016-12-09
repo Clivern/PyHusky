@@ -21,4 +21,5 @@ mig.drop_permissions_table()
 mig.drop_permission_role_table()
 mig.drop_role_user_table()
 mig.drop_permission_user_table()
+
 """
