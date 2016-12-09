@@ -5,6 +5,9 @@ PyHusky is a light-weight Python Role Based Permissions Library.
 
 *Under Development*
 
+[![Build Status](https://travis-ci.org/Clivern/PyHusky.svg?branch=master)](https://travis-ci.org/Clivern/PyHusky)
+[![PyPI version](https://badge.fury.io/py/PyHusky.svg)](https://badge.fury.io/py/PyHusky)
+
 Installation
 ------------
 To install PyHusky run this command:

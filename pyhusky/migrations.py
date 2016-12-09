@@ -132,7 +132,7 @@ class MySQLMigration(object):
         pass
 
     def _query(self, query):
-        print(query)
+        return query
 
 
 class SQLLiteMigration(object):
