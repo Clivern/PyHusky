@@ -8,14 +8,6 @@
 """
 
 
-class Configs(object):
-    """Configs Module"""
-
-    def set_model_options(self, options):
-        pass
-
-    def set_migration_options(self, options):
-        pass
-
-    def migrate(self):
-        pass
+class Users(object):
+    """Users Module"""
+    pass

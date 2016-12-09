@@ -8,6 +8,16 @@
 """
 
 
-class Migrations(object):
-    """Migrations Module"""
+class MySQLMigration(object):
+    """MySQL Migration Module"""
+    pass
+
+
+class SQLLiteMigration(object):
+    """SQLLite Migration Module"""
+    pass
+
+
+class PostgreSQLMigration(object):
+    """PostgreSQL Migration Module"""
     pass
