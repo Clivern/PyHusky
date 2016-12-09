@@ -9,7 +9,7 @@ Installation
 ------------
 To install PyHusky run this command:
 ```
-pip install husky
+pip install pyhusky
 ```
 or [download](https://github.com/Clivern/husky/archive/1.0.0.zip) Package then run this command:
 ```
