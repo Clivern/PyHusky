@@ -21,12 +21,12 @@ class Roles(object):
                         "display_name": "Role Name",
                         "description": "Role Description...etc",
                         "permissions": [
-                            { "name": "permission_name", "display_name": "Permission Name", "description": "Permission Description..etc" },
-                            { "name": "permission_name", "display_name": "Permission Name", "description": "Permission Description..etc" },
-                            { "name": "permission_name", "display_name": "Permission Name", "description": "Permission Description..etc" },
+                            { "name": "permission_name", "display_name": "Permission Name", "description": "Permission Description..etc", "users_ids": (1, 2, 3, 58, 56) },
+                            { "name": "permission_name", "display_name": "Permission Name", "description": "Permission Description..etc", "users_ids": (1, 2, 3, 58, 56) },
+                            { "name": "permission_name", "display_name": "Permission Name", "description": "Permission Description..etc", "users_ids": (1, 2, 3, 58, 56) },
                             ....
                         ],
-                        "users_ids" => (1, 2, 3, 58, 56)
+                        "users_ids": (1, 2, 3, 58, 56)
                     }]
                     Only role name is required
 
@@ -46,12 +46,12 @@ class Roles(object):
                         "display_name": "Role Name",
                         "description": "Role Description...etc",
                         "permissions": [
-                            { "name": "permission_name", "display_name": "Permission Name", "description": "Permission Description..etc" },
-                            { "name": "permission_name", "display_name": "Permission Name", "description": "Permission Description..etc" },
-                            { "name": "permission_name", "display_name": "Permission Name", "description": "Permission Description..etc" },
+                            { "name": "permission_name", "display_name": "Permission Name", "description": "Permission Description..etc", "users_ids": (1, 2, 3, 58, 56) },
+                            { "name": "permission_name", "display_name": "Permission Name", "description": "Permission Description..etc", "users_ids": (1, 2, 3, 58, 56) },
+                            { "name": "permission_name", "display_name": "Permission Name", "description": "Permission Description..etc", "users_ids": (1, 2, 3, 58, 56) },
                             ....
                         ],
-                        "users_ids" => (1, 2, 3, 58, 56)
+                        "users_ids": (1, 2, 3, 58, 56)
                     }
                     Only role name is required
 
@@ -64,11 +64,11 @@ class Roles(object):
     def has_role(self, user_id, role_name):
         pass
 
-    def get_role(self, role_name=False, role_id=False):
+    def get_role(self, **options):
         pass
 
     def update_role(self, role_name=False, role_id=False, **new_data):
         pass
 
-    def delete_role(self, role_name=False, role_id=False):
+    def delete_role(self, **options):
         pass
