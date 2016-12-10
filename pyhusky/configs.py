@@ -64,16 +64,18 @@ class Configs(object):
         if self._options['db_driver'] == 'mysql':
             migration = MySQLMigration(self._options['db'],self._options['tables'])
 
-        if 'roles' in tables:
-            migration.create_roles_table()
-        if 'permissions' in tables:
-            migration.create_permissions_table()
-        if 'permission_role' in tables:
-            migration.create_permission_role_table()
-        if 'role_user' in tables:
-            migration.create_role_user_table()
-        if 'permission_user' in tables:
-            migration.create_permission_user_table()
+            if 'roles' in tables:
+                migration.create_roles_table()
+            if 'permissions' in tables:
+                migration.create_permissions_table()
+            if 'permission_role' in tables:
+                migration.create_permission_role_table()
+            if 'role_user' in tables:
+                migration.create_role_user_table()
+            if 'permission_user' in tables:
+                migration.create_permission_user_table()
+
+            migration.close()
 
     def migrate_down(self, tables):
         """Drop Tables
@@ -94,6 +96,8 @@ class Configs(object):
                 migration.drop_roles_table()
             if 'permissions' in tables:
                 migration.drop_permissions_table()
+
+            migration.close()
 
         else:
             raise PyHuskyError('Error! Database driver is invalid.')
