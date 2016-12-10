@@ -124,7 +124,7 @@ class MySQLModel(object):
         try:
             self._connection = pymysql.connect(host=self._db['host'], user=self._db['username'], password=self._db['password'], db=self._db['database'], charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
         except Exception as e:
-            raise PyHuskyError('Error! Cann\'t Connect to Database \'%s\'' % self._db['database'])
+            raise PyHuskyError("Error! Cann't Connect to Database '%s'" % self._db['database'])
 
 
     def close(self):

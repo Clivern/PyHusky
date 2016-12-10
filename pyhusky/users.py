@@ -10,4 +10,4 @@
 
 class Users(object):
     """Users Module"""
-    pass
+    _model=False

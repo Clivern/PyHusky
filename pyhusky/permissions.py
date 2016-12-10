@@ -11,6 +11,8 @@
 class Permissions(object):
     """Permissions Module"""
 
+    _model=False
+
     def add_permissions(self, permissions):
         """ Add Many Permissions
 

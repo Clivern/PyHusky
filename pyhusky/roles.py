@@ -7,9 +7,11 @@
     :license: MIT, see LICENSE for more details.
 """
 
+
 class Roles(object):
     """Roles Module"""
 
+    _model=False
 
     def add_roles(self, roles):
         """ Add Many Roles

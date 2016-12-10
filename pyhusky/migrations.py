@@ -6,7 +6,6 @@
     :copyright: (c) 2016 by Clivern (hello@clivern.com).
     :license: MIT, see LICENSE for more details.
 """
-
 import pymysql.cursors
 from .exceptions import PyHuskyError
 
@@ -15,9 +14,9 @@ class MySQLMigration(object):
     """MySQL Migration Module"""
 
     _db={
-        'host': '127.0.0.1',
+        'host': 'localhost',
         'username': 'root',
-        'password': '',
+        'password': 'root',
         'database': 'pyhusky'
     }
 
@@ -198,7 +197,7 @@ class MySQLMigration(object):
         try:
             self._connection = pymysql.connect(host=self._db['host'], user=self._db['username'], password=self._db['password'], db=self._db['database'], charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
         except Exception as e:
-            raise PyHuskyError('Error! Cann\'t Connect to Database \'%s\'' % self._db['database'])
+            raise PyHuskyError("Error! Cann't Connect to Database '%s'" % self._db['database'])
 
 
     def close(self):
