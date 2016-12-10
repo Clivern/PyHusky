@@ -22,6 +22,9 @@ setup(
     keywords="role,acl,permissions",
     url="http://clivern.github.io/pyhusky/",
     packages=['pyhusky'],
+    install_requires=[
+        'PyMySQL'
+    ],
     long_description=read_file('README.md'),
     classifiers=[
         'Development Status :: 5 - Production/Stable',

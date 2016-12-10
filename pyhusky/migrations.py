@@ -7,6 +7,39 @@
     :license: MIT, see LICENSE for more details.
 """
 
+import pymysql.cursors
+"""
+
+
+# Connect to the database
+connection = pymysql.connect(host=_db['host'],
+                             user=_db['username'],
+                             password=_db['password'],
+                             db=_db['database'],
+                             charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
+
+try:
+    with connection.cursor() as cursor:
+        # Create a new record
+        sql = "INSERT INTO `users` (`email`, `password`) VALUES (%s, %s)"
+        cursor.execute(sql, ('webmaster@python.org', 'very-secret'))
+
+    # connection is not autocommit by default. So you must commit to save
+    # your changes.
+    connection.commit()
+
+    with connection.cursor() as cursor:
+        # Read a single record
+        sql = "SELECT `id`, `password` FROM `users` WHERE `email`=%s"
+        cursor.execute(sql, ('webmaster@python.org',))
+        result = cursor.fetchone()
+        print(result)
+finally:
+    connection.close()
+"""
+
+
 
 class MySQLMigration(object):
     """MySQL Migration Module"""
@@ -33,7 +66,7 @@ class MySQLMigration(object):
         self._connect()
 
     def create_roles_table(self):
-        query="""CREATE TABLE `{prefix}{table}` (
+        query="""CREATE TABLE IF NOT EXISTS `{prefix}{table}` (
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
               `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
               `display_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -47,7 +80,7 @@ class MySQLMigration(object):
         return self._query(query)
 
     def create_permissions_table(self):
-        query="""CREATE TABLE `{prefix}{table}` (
+        query="""CREATE TABLE IF NOT EXISTS `{prefix}{table}` (
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
               `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
               `display_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -61,7 +94,7 @@ class MySQLMigration(object):
         return self._query(query)
 
     def create_permission_role_table(self):
-        query="""CREATE TABLE `{prefix}{table}` (
+        query="""CREATE TABLE IF NOT EXISTS `{prefix}{table}` (
               `permission_id` int(10) unsigned NOT NULL,
               `role_id` int(10) unsigned NOT NULL,
               PRIMARY KEY (`permission_id`,`role_id`),
@@ -80,7 +113,7 @@ class MySQLMigration(object):
         else:
             users_table_constraint=""
 
-        query="""CREATE TABLE `{prefix}{table}` (
+        query="""CREATE TABLE IF NOT EXISTS `{prefix}{table}` (
               `user_id` int(10) unsigned NOT NULL,
               `role_id` int(10) unsigned NOT NULL,
               PRIMARY KEY (`user_id`,`role_id`),
@@ -98,7 +131,7 @@ class MySQLMigration(object):
         else:
             users_table_constraint=""
 
-        query="""CREATE TABLE `{prefix}{table}` (
+        query="""CREATE TABLE IF NOT EXISTS `{prefix}{table}` (
               `permission_id` int(10) unsigned NOT NULL,
               `user_id` int(10) unsigned NOT NULL,
               PRIMARY KEY (`permission_id`,`user_id`),
@@ -128,12 +161,36 @@ class MySQLMigration(object):
         query="DROP TABLE IF EXISTS `{prefix}{table}`;".format(prefix=self._tables['prefix'], table=self._tables['permission_user_table'])
         return self._query(query)
 
+    def table_exists(self, table_name):
+        with self._connection.cursor() as cursor:
+            cursor.execute("SHOW TABLES LIKE '" + table_name +"';")
+        self._connection.commit()
+        for row in cursor:
+            return table_name in row.values()
+
     def _connect(self):
-        pass
+        self._connection = pymysql.connect(host=self._db['host'],
+                                     user=self._db['username'],
+                                     password=self._db['password'],
+                                     db=self._db['database'],
+                                     charset='utf8mb4',
+                                     cursorclass=pymysql.cursors.DictCursor)
+
+    def close(self):
+        self._connection.close()
 
     def _query(self, query):
-        return query
+        with self._connection.cursor() as cursor:
+            cursor.execute(query)
+        self._connection.commit()
 
+"""
+mig = MySQLMigration({},{})
+mig.create_roles_table()
+print(mig.table_exists('roles_table'))
+mig.drop_roles_table()
+mig.close()
+"""
 
 class SQLLiteMigration(object):
     """SQLLite Migration Module"""
