@@ -16,7 +16,6 @@ class TestExceptionMethods(unittest.TestCase):
     def test_migration(self):
         mig = MySQLMigration({},{})
         self.assertEqual(mig.create_roles_table(), None)
-        self.assertEqual(mig.create_roles_table(), None)
         self.assertEqual(mig.create_permissions_table(), None)
         self.assertEqual(mig.create_permission_role_table(), None)
         self.assertEqual(mig.create_role_user_table(), None)
