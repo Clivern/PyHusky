@@ -8,37 +8,6 @@
 """
 
 import pymysql.cursors
-"""
-
-
-# Connect to the database
-connection = pymysql.connect(host=_db['host'],
-                             user=_db['username'],
-                             password=_db['password'],
-                             db=_db['database'],
-                             charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
-
-try:
-    with connection.cursor() as cursor:
-        # Create a new record
-        sql = "INSERT INTO `users` (`email`, `password`) VALUES (%s, %s)"
-        cursor.execute(sql, ('webmaster@python.org', 'very-secret'))
-
-    # connection is not autocommit by default. So you must commit to save
-    # your changes.
-    connection.commit()
-
-    with connection.cursor() as cursor:
-        # Read a single record
-        sql = "SELECT `id`, `password` FROM `users` WHERE `email`=%s"
-        cursor.execute(sql, ('webmaster@python.org',))
-        result = cursor.fetchone()
-        print(result)
-finally:
-    connection.close()
-"""
-
 
 
 class MySQLMigration(object):
@@ -68,7 +37,7 @@ class MySQLMigration(object):
     def create_roles_table(self):
 
         if self._table_exists(self._tables['prefix'] + self._tables['roles_table']):
-            return False
+            return None
 
         query="""CREATE TABLE IF NOT EXISTS `{prefix}{table}` (
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -86,7 +55,7 @@ class MySQLMigration(object):
     def create_permissions_table(self):
 
         if self._table_exists(self._tables['prefix'] + self._tables['permissions_table']):
-            return False
+            return None
 
         query="""CREATE TABLE IF NOT EXISTS `{prefix}{table}` (
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -104,16 +73,16 @@ class MySQLMigration(object):
     def create_permission_role_table(self):
 
         if self._table_exists(self._tables['prefix'] + self._tables['permission_role_table']):
-            return False
+            return None
 
         query="""CREATE TABLE IF NOT EXISTS `{prefix}{table}` (
               `permission_id` int(10) unsigned NOT NULL,
               `role_id` int(10) unsigned NOT NULL,
               PRIMARY KEY (`permission_id`,`role_id`),
               KEY `permission_role_role_id_foreign` (`role_id`),
-              CONSTRAINT `permission_role_permission_id_foreign` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-              CONSTRAINT `permission_role_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;""".format(prefix=self._tables['prefix'], table=self._tables['permission_role_table'])
+              CONSTRAINT `permission_role_permission_id_foreign` FOREIGN KEY (`permission_id`) REFERENCES `{permissions_table}` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+              CONSTRAINT `permission_role_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `{roles_table}` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;""".format(prefix=self._tables['prefix'], table=self._tables['permission_role_table'], roles_table=self._tables['prefix'] + self._tables['roles_table'], permissions_table=self._tables['prefix'] + self._tables['permissions_table'])
         return self._query(query)
 
     def create_role_user_table(self):
@@ -126,15 +95,15 @@ class MySQLMigration(object):
             users_table_constraint=""
 
         if self._table_exists(self._tables['prefix'] + self._tables['role_user_table']):
-            return False
+            return None
 
         query="""CREATE TABLE IF NOT EXISTS `{prefix}{table}` (
               `user_id` int(10) unsigned NOT NULL,
               `role_id` int(10) unsigned NOT NULL,
               PRIMARY KEY (`user_id`,`role_id`),
               KEY `role_user_role_id_foreign` (`role_id`),
-              CONSTRAINT `role_user_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE{users_table_constraint}
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;""".format(prefix=self._tables['prefix'], table=self._tables['role_user_table'], users_table_constraint=users_table_constraint)
+              CONSTRAINT `role_user_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `{roles_table}` (`id`) ON DELETE CASCADE ON UPDATE CASCADE{users_table_constraint}
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;""".format(prefix=self._tables['prefix'], table=self._tables['role_user_table'], users_table_constraint=users_table_constraint, roles_table=self._tables['prefix'] + self._tables['roles_table'], permissions_table=self._tables['prefix'] + self._tables['permissions_table'])
         return self._query(query)
 
     def create_permission_user_table(self):
@@ -147,22 +116,21 @@ class MySQLMigration(object):
             users_table_constraint=""
 
         if self._table_exists(self._tables['prefix'] + self._tables['permission_user_table']):
-            return False
+            return None
 
         query="""CREATE TABLE IF NOT EXISTS `{prefix}{table}` (
               `permission_id` int(10) unsigned NOT NULL,
               `user_id` int(10) unsigned NOT NULL,
               PRIMARY KEY (`permission_id`,`user_id`),
               KEY `permission_user_user_id_foreign` (`user_id`),
-              CONSTRAINT `permission_user_permission_id_foreign` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-              CONSTRAINT `permission_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;""".format(prefix=self._tables['prefix'], table=self._tables['permission_user_table'])
+              CONSTRAINT `permission_user_permission_id_foreign` FOREIGN KEY (`permission_id`) REFERENCES `{permissions_table}` (`id`) ON DELETE CASCADE ON UPDATE CASCADE{users_table_constraint}
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;""".format(prefix=self._tables['prefix'], table=self._tables['permission_user_table'], users_table_constraint=users_table_constraint, roles_table=self._tables['prefix'] + self._tables['roles_table'], permissions_table=self._tables['prefix'] + self._tables['permissions_table'])
         return self._query(query)
 
     def drop_roles_table(self):
 
         if not self._table_exists(self._tables['prefix'] + self._tables['roles_table']):
-            return False
+            return None
 
         query="DROP TABLE IF EXISTS `{prefix}{table}`;".format(prefix=self._tables['prefix'], table=self._tables['roles_table'])
         return self._query(query)
@@ -170,7 +138,7 @@ class MySQLMigration(object):
     def drop_permissions_table(self):
 
         if not self._table_exists(self._tables['prefix'] + self._tables['permissions_table']):
-            return False
+            return None
 
         query="DROP TABLE IF EXISTS `{prefix}{table}`;".format(prefix=self._tables['prefix'], table=self._tables['permissions_table'])
         return self._query(query)
@@ -178,7 +146,7 @@ class MySQLMigration(object):
     def drop_permission_role_table(self):
 
         if not self._table_exists(self._tables['prefix'] + self._tables['permission_role_table']):
-            return False
+            return None
 
         query="DROP TABLE IF EXISTS `{prefix}{table}`;".format(prefix=self._tables['prefix'], table=self._tables['permission_role_table'])
         return self._query(query)
@@ -186,7 +154,7 @@ class MySQLMigration(object):
     def drop_role_user_table(self):
 
         if not self._table_exists(self._tables['prefix'] + self._tables['role_user_table']):
-            return False
+            return None
 
         query="DROP TABLE IF EXISTS `{prefix}{table}`;".format(prefix=self._tables['prefix'], table=self._tables['role_user_table'])
         return self._query(query)
@@ -194,7 +162,7 @@ class MySQLMigration(object):
     def drop_permission_user_table(self):
 
         if not self._table_exists(self._tables['prefix'] + self._tables['permission_user_table']):
-            return False
+            return None
 
         query="DROP TABLE IF EXISTS `{prefix}{table}`;".format(prefix=self._tables['prefix'], table=self._tables['permission_user_table'])
         return self._query(query)
@@ -217,11 +185,6 @@ class MySQLMigration(object):
             cursor.execute(query)
         self._connection.commit()
 
-
-mig = MySQLMigration({},{})
-print(mig.create_roles_table())
-print(mig.drop_roles_table())
-mig.close()
 
 class SQLLiteMigration(object):
     """SQLLite Migration Module"""

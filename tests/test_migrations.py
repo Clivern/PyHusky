@@ -21,11 +21,11 @@ class TestExceptionMethods(unittest.TestCase):
         self.assertEqual(mig.create_role_user_table(), None)
         self.assertEqual(mig.create_permission_user_table(), None)
 
+        self.assertEqual(mig.drop_permission_user_table(), None)
+        self.assertEqual(mig.drop_role_user_table(), None)
+        self.assertEqual(mig.drop_permission_role_table(), None)
         self.assertEqual(mig.drop_roles_table(), None)
         self.assertEqual(mig.drop_permissions_table(), None)
-        self.assertEqual(mig.drop_permission_role_table(), None)
-        self.assertEqual(mig.drop_role_user_table(), None)
-        self.assertEqual(mig.drop_permission_user_table(), None)
 
 
 if __name__ == '__main__':
