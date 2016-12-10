@@ -8,6 +8,7 @@
 """
 
 import pymysql.cursors
+from .exceptions import PyHuskyError
 
 
 class MySQLMigration(object):
@@ -31,11 +32,24 @@ class MySQLMigration(object):
         'permission_user_table': 'permission_user'
     }
 
-    def __init__(self, db, tables):
+    def __init__(self, db={}, tables={}):
+        """Set Database Configs and Tables
+
+            Args:
+                db: A list of database configs
+                tables: A list of tables configs
+
+        """
+        for key in db:
+            self._db[key] = db[key]
+
+        for key in tables:
+            self._tables[key] = tables[key]
+
         self._connect()
 
     def create_roles_table(self):
-
+        """Create Roles Table"""
         if self._table_exists(self._tables['prefix'] + self._tables['roles_table']):
             return None
 
@@ -53,7 +67,7 @@ class MySQLMigration(object):
         return self._query(query)
 
     def create_permissions_table(self):
-
+        """Create Permissions Table"""
         if self._table_exists(self._tables['prefix'] + self._tables['permissions_table']):
             return None
 
@@ -71,7 +85,7 @@ class MySQLMigration(object):
         return self._query(query)
 
     def create_permission_role_table(self):
-
+        """Create Permission Role Table"""
         if self._table_exists(self._tables['prefix'] + self._tables['permission_role_table']):
             return None
 
@@ -86,7 +100,7 @@ class MySQLMigration(object):
         return self._query(query)
 
     def create_role_user_table(self):
-
+        """Create Role User Table"""
         if self._tables['users_table'] != False and self._tables['users_table_id'] != False and self._table_exists(self._tables['users_table']):
             users_table_constraint=""",
             CONSTRAINT `role_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `{users_table}` (`{users_table_id}`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -107,7 +121,7 @@ class MySQLMigration(object):
         return self._query(query)
 
     def create_permission_user_table(self):
-
+        """Create Permission User Table"""
         if self._tables['users_table'] != False and self._tables['users_table_id'] != False and self._table_exists(self._tables['users_table']):
             users_table_constraint=""",
             CONSTRAINT `permission_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `{users_table}` (`{users_table_id}`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -128,7 +142,7 @@ class MySQLMigration(object):
         return self._query(query)
 
     def drop_roles_table(self):
-
+        """Drop Roles Table"""
         if not self._table_exists(self._tables['prefix'] + self._tables['roles_table']):
             return None
 
@@ -136,7 +150,7 @@ class MySQLMigration(object):
         return self._query(query)
 
     def drop_permissions_table(self):
-
+        """Drop Permissions Table"""
         if not self._table_exists(self._tables['prefix'] + self._tables['permissions_table']):
             return None
 
@@ -144,7 +158,7 @@ class MySQLMigration(object):
         return self._query(query)
 
     def drop_permission_role_table(self):
-
+        """Drop Permission Role Table"""
         if not self._table_exists(self._tables['prefix'] + self._tables['permission_role_table']):
             return None
 
@@ -152,7 +166,7 @@ class MySQLMigration(object):
         return self._query(query)
 
     def drop_role_user_table(self):
-
+        """Drop Role User Table"""
         if not self._table_exists(self._tables['prefix'] + self._tables['role_user_table']):
             return None
 
@@ -160,7 +174,7 @@ class MySQLMigration(object):
         return self._query(query)
 
     def drop_permission_user_table(self):
-
+        """Drop Permission User Table"""
         if not self._table_exists(self._tables['prefix'] + self._tables['permission_user_table']):
             return None
 
@@ -168,6 +182,11 @@ class MySQLMigration(object):
         return self._query(query)
 
     def _table_exists(self, table_name):
+        """Check if Tables Exist
+
+            Args:
+                table_name: a table name to check
+        """
         with self._connection.cursor() as cursor:
             cursor.execute("SHOW TABLES LIKE '" + table_name +"';")
         self._connection.commit()
@@ -175,12 +194,23 @@ class MySQLMigration(object):
             return table_name in row.values()
 
     def _connect(self):
-        self._connection = pymysql.connect(host=self._db['host'], user=self._db['username'], password=self._db['password'], db=self._db['database'], charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+        """Connect to Database"""
+        try:
+            self._connection = pymysql.connect(host=self._db['host'], user=self._db['username'], password=self._db['password'], db=self._db['database'], charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+        except Exception as e:
+            raise PyHuskyError('Error! Cann\'t Connect to Database \'%s\'' % self._db['database'])
+
 
     def close(self):
+        """Close Database Connection"""
         self._connection.close()
 
     def _query(self, query):
+        """Run MySQL Query
+
+            Args:
+                query: MySQL query to execute
+        """
         with self._connection.cursor() as cursor:
             cursor.execute(query)
         self._connection.commit()
