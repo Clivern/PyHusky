@@ -67,10 +67,14 @@ class PyHusky(object):
             for key in options['tables']:
                 self._options['tables'][key] = options['tables'][key]
 
-    def setup(self):
-        """Setup Library Required Tables"""
+    def setup(self, tables=['roles', 'permissions', 'permission_role', 'role_user', 'permission_user']):
+        """Setup Library Required Tables
+
+            Args:
+                tables: a list of tables to create
+        """
         self.set_migrations_obj()
-        self.migrate_up(['roles', 'permissions', 'permission_role', 'role_user', 'permission_user'])
+        self.migrate_up(tables)
 
     def config(self):
         """Config PyHusky"""
@@ -81,10 +85,14 @@ class PyHusky(object):
         self.set_users_obj()
         self.set_utils_obj()
 
-    def uninstall(self):
-        """Drop Library Tables"""
+    def uninstall(self, tables=['roles', 'permissions', 'permission_role', 'role_user', 'permission_user']):
+        """Drop Library Tables
+
+            Args:
+                tables: a list of tables to drop
+        """
         self.set_migrations_obj()
-        self.migrate_down(['roles', 'permissions', 'permission_role', 'role_user', 'permission_user'])
+        self.migrate_down(tables)
 
     def set_integrations_obj(self):
         """Set Integrations Object"""

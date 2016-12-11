@@ -7,16 +7,87 @@
     :license: MIT, see LICENSE for more details.
 """
 import pymysql.cursors
-from .exceptions import PyHuskyError
+#from .exceptions import PyHuskyError
+import datetime
+
+# print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+"""
+mysql> describe ph_roles;
++--------------+------------------+------+-----+---------------------+----------------+
+| Field        | Type             | Null | Key | Default             | Extra          |
++--------------+------------------+------+-----+---------------------+----------------+
+| id           | int(10) unsigned | NO   | PRI | NULL                | auto_increment |
+| name         | varchar(255)     | NO   | UNI | NULL                |                |
+| display_name | varchar(255)     | YES  |     | NULL                |                |
+| description  | varchar(255)     | YES  |     | NULL                |                |
+| created_at   | timestamp        | NO   |     | 0000-00-00 00:00:00 |                |
+| updated_at   | timestamp        | NO   |     | 0000-00-00 00:00:00 |                |
+| enabled      | tinyint(1)       | NO   |     | 0                   |                |
++--------------+------------------+------+-----+---------------------+----------------+
+7 rows in set (0.00 sec)
+
+mysql> describe ph_role_user;
++---------+------------------+------+-----+---------+-------+
+| Field   | Type             | Null | Key | Default | Extra |
++---------+------------------+------+-----+---------+-------+
+| user_id | int(10) unsigned | NO   | PRI | NULL    |       |
+| role_id | int(10) unsigned | NO   | PRI | NULL    |       |
++---------+------------------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+mysql> select users.name, programs.name from linker
+    -> join users on users.id = linker.user_id
+    -> join programs on programs.id = linker.program_id;
 
 
+SELECT * FROM ph_role_user WHERE user_id=%s AND role_id=%
+SELECT ph_roles.id, ph_roles.display_name from ph_roles join ph_role_user on ph_role_user.role_id  = ph_roles.id WHERE ph_roles.name = {role_name} AND ph_role_user.user_id = {user_id}
+
+mysql> describe ph_permissions;
++--------------+------------------+------+-----+---------------------+----------------+
+| Field        | Type             | Null | Key | Default             | Extra          |
++--------------+------------------+------+-----+---------------------+----------------+
+| id           | int(10) unsigned | NO   | PRI | NULL                | auto_increment |
+| name         | varchar(255)     | NO   | UNI | NULL                |                |
+| display_name | varchar(255)     | YES  |     | NULL                |                |
+| description  | varchar(255)     | YES  |     | NULL                |                |
+| created_at   | timestamp        | NO   |     | 0000-00-00 00:00:00 |                |
+| updated_at   | timestamp        | NO   |     | 0000-00-00 00:00:00 |                |
+| enabled      | tinyint(1)       | NO   |     | 0                   |                |
++--------------+------------------+------+-----+---------------------+----------------+
+7 rows in set (0.01 sec)
+
+mysql> describe ph_permission_user;
++---------------+------------------+------+-----+---------+-------+
+| Field         | Type             | Null | Key | Default | Extra |
++---------------+------------------+------+-----+---------+-------+
+| permission_id | int(10) unsigned | NO   | PRI | NULL    |       |
+| user_id       | int(10) unsigned | NO   | PRI | NULL    |       |
++---------------+------------------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+mysql> describe ph_permission_role;
++---------------+------------------+------+-----+---------+-------+
+| Field         | Type             | Null | Key | Default | Extra |
++---------------+------------------+------+-----+---------+-------+
+| permission_id | int(10) unsigned | NO   | PRI | NULL    |       |
+| role_id       | int(10) unsigned | NO   | PRI | NULL    |       |
++---------------+------------------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+"""
+"""
+INSERT INTO ph_rules (name, display_name, description, created_at, updated_at, enabled) VALUES (value1, value2, value3,...)
+DELETE FROM ph_rules WHERE name=value;
+UPDATE ph_rules SET display_name=value, description=value WHERE name=value;
+SELECT * FROM ph_rules WHERE name=value
+"""
 class MySQLModel(object):
     """MySQL Model Module"""
 
     _db={
-        'host': '127.0.0.1',
+        'host': 'localhost',
         'username': 'root',
-        'password': '',
+        'password': 'root',
         'database': 'pyhusky'
     }
 
@@ -48,10 +119,29 @@ class MySQLModel(object):
         self._connect()
 
     def has_role(self, user_id, role_name, role_id=False):
-        pass
+        if role_id != False:
+            query="SELECT * FROM {role_user_table} WHERE user_id={user_id} AND role_id={role_id}".format(
+                role_user_table=self._tables['prefix'] + self._tables['role_user_table'],
+                user_id=user_id,
+                role_id=role_id
+            )
+        elif role_name != False:
+            query="SELECT {roles_table}.id, {roles_table}.display_name FROM {roles_table} JOIN {role_user_table} ON {role_user_table}.role_id = {roles_table}.id WHERE {roles_table}.name = {role_name} AND {role_user_table}.user_id = {user_id}".format(
+                role_user_table=self._tables['prefix'] + self._tables['role_user_table'],
+                roles_table=self._tables['prefix'] + self._tables['roles_table'],
+                user_id=user_id,
+                role_name=role_name
+            )
+        else:
+            raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:has_role'")
 
     def has_permission(self, user_id, permission_name, permission_id=False):
-        pass
+        if permission_id != False:
+            query=""
+        elif permission_name != False:
+            query=""
+        else:
+            raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:has_permission'")
 
     def get_user_roles(self, user_id):
         pass
