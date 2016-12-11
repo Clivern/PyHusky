@@ -13,6 +13,8 @@ import datetime
 # print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 """
+get_user_roles
+
 mysql> describe ph_roles;
 +--------------+------------------+------+-----+---------------------+----------------+
 | Field        | Type             | Null | Key | Default             | Extra          |
@@ -26,6 +28,11 @@ mysql> describe ph_roles;
 | enabled      | tinyint(1)       | NO   |     | 0                   |                |
 +--------------+------------------+------+-----+---------------------+----------------+
 7 rows in set (0.00 sec)
+
+SELECT ph_roles.* FROM ph_roles join ph_role_user on ph_role_user.role_id = ph_roles.id WHERE ph_role_user.user_id = {user_id}
+SELECT ph_permissions.* FROM ph_permissions join ph_permission_user on ph_permission_user.permission_id = ph_permissions.id WHERE ph_permission_user.user_id = {user_id}
+SELECT ph_permissions.* FROM ph_permissions join ph_permission_role on ph_permission_role.permission_id = ph_permissions.id WHERE ph_permission_role.role_id IN ({roles})
+
 
 mysql> describe ph_role_user;
 +---------+------------------+------+-----+---------+-------+
@@ -101,7 +108,7 @@ class MySQLModel(object):
         'users_table_id': False,
         'roles_table': 'roles',
         'permissions_table': 'permissions',
-        '   ': 'permission_role',
+        'permission_role_table': 'permission_role',
         'role_user_table': 'role_user',
         'permission_user_table': 'permission_user'
     }
@@ -140,7 +147,19 @@ class MySQLModel(object):
             raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:has_role'")
 
 
-
+    def role_enabled(self, role_name, role_id=False):
+        if role_id != False:
+            query="SELECT * FROM {roles_table} WHERE id={role_id} AND enabled=1".format(
+                roles_table=self._tables['prefix'] + self._tables['roles_table'],
+                role_id=role_id
+            )
+        elif role_name != False:
+            query="SELECT * FROM {roles_table} WHERE name={role_name} AND enabled=1".format(
+                roles_table=self._tables['prefix'] + self._tables['roles_table'],
+                role_name=role_name
+            )
+        else:
+            raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:role_enabled'")
 
     def has_permission(self, user_id, permission_name, permission_id=False):
         if permission_id != False:
@@ -154,11 +173,13 @@ class MySQLModel(object):
                 permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
                 permission_id=permission_id
             )
-            query_3="SELECT * FROM {role_user_table} WHERE user_id={user_id} AND role_id IN ({roles_ids})".format(
-                role_user_table=self._tables['prefix'] + self._tables['role_user_table'],
-                user_id=user_id,
-                roles_ids=roles_ids
-            )
+
+            if roles_ids != '':
+                query_3="SELECT * FROM {role_user_table} WHERE user_id={user_id} AND role_id IN ({roles_ids})".format(
+                    role_user_table=self._tables['prefix'] + self._tables['role_user_table'],
+                    user_id=user_id,
+                    roles_ids=roles_ids
+                )
         elif permission_name != False:
             query_1="SELECT {permissions_table}.id, {permissions_table}.display_name FROM {permissions_table} JOIN {permission_user_table} ON {permission_user_table}.permission_id = {permissions_table}.id WHERE {permissions_table}.name = {permission_name} AND {permission_user_table}.user_id = {user_id}".format(
                 permission_user_table=self._tables['prefix'] + self._tables['permission_user_table'],
@@ -171,31 +192,95 @@ class MySQLModel(object):
                 permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
                 permission_name=permission_name
             )
-            query_3="SELECT * FROM {role_user_table} WHERE user_id={user_id} AND role_id IN ({roles_ids})".format(
-                role_user_table=self._tables['prefix'] + self._tables['role_user_table'],
-                user_id=user_id,
-                roles_ids=roles_ids
-            )
+
+            if roles_ids != '':
+                query_3="SELECT * FROM {role_user_table} WHERE user_id={user_id} AND role_id IN ({roles_ids})".format(
+                    role_user_table=self._tables['prefix'] + self._tables['role_user_table'],
+                    user_id=user_id,
+                    roles_ids=roles_ids
+                )
         else:
             raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:has_permission'")
 
+
+    def permission_enabled(self, permission_name, permission_id=False):
+        if permission_id != False:
+            query="SELECT * FROM {permissions_table} WHERE id={permission_id} AND enabled=1".format(
+                permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+                permission_id=permission_id
+            )
+        elif permission_name != False:
+            query="SELECT * FROM {permissions_table} WHERE name={permission_name} AND enabled=1".format(
+                permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+                permission_name=permission_name
+            )
+        else:
+            raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:permission_enabled'")
+
+
     def get_user_roles(self, user_id):
-        pass
+        query="SELECT {roles_table}.* FROM {roles_table} JOIN {role_user_table} ON {role_user_table}.role_id = {roles_table}.id WHERE {role_user_table}.user_id = {user_id}".format(
+            roles_table=self._tables['prefix'] + self._tables['roles_table'],
+            role_user_table=self._tables['prefix'] + self._tables['role_user_table'],
+            user_id=user_id
+        )
 
     def get_user_permissions(self, user_id):
-        pass
+        query_1="SELECT {roles_table}.* FROM {roles_table} JOIN {role_user_table} ON {role_user_table}.role_id = {roles_table}.id WHERE {role_user_table}.user_id = {user_id}".format(
+            roles_table=self._tables['prefix'] + self._tables['roles_table'],
+            role_user_table=self._tables['prefix'] + self._tables['role_user_table'],
+            user_id=user_id
+        )
+        query_2="SELECT {permissions_table}.* FROM {permissions_table} JOIN {permission_user_table} ON {permission_user_table}.permission_id = {permissions_table}.id WHERE {permission_user_table}.user_id = {user_id}".format(
+            permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+            permission_user_table=self._tables['prefix'] + self._tables['permission_user_table'],
+            user_id=user_id
+        )
+
+        if roles_ids != '':
+            query_3="SELECT {permissions_table}.* FROM {permissions_table} JOIN {permission_role_table} ON {permission_role_table}.permission_id = {permissions_table}.id WHERE {permission_role_table}.role_id IN ({roles_ids})".format(
+                permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+                permission_role_table=self._tables['prefix'] + self._tables['permission_role_table'],
+                roles_ids=roles_ids
+            )
 
     def get_role(self, role_name, role_id=False):
-        pass
+        if role_id != False:
+            query="SELECT * FROM {roles_table} WHERE id={role_id}".format(
+                roles_table=self._tables['prefix'] + self._tables['roles_table'],
+                role_id=role_id
+            )
+        elif role_name != False:
+            query="SELECT * FROM {roles_table} WHERE name={role_name}".format(
+                roles_table=self._tables['prefix'] + self._tables['roles_table'],
+                role_name=role_name
+            )
+        else:
+            raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:get_role'")
 
     def get_roles(self):
-        pass
+        query="SELECT * FROM {roles_table}".format(
+            roles_table=self._tables['prefix'] + self._tables['roles_table']
+        )
 
     def get_permission(self, permission_name, permission_id=False):
-        pass
+        if permission_id != False:
+            query="SELECT * FROM {permissions_table} WHERE id={permission_id}".format(
+                permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+                permission_id=permission_id
+            )
+        elif permission_name != False:
+            query="SELECT * FROM {permissions_table} WHERE name={permission_name}".format(
+                permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+                permission_name=permission_name
+            )
+        else:
+            raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:get_permission'")
 
     def get_permissions(self):
-        pass
+        query="SELECT * FROM {permissions_table}".format(
+            permissions_table=self._tables['prefix'] + self._tables['permissions_table']
+        )
 
     def add_role(self, role):
         pass
@@ -228,10 +313,32 @@ class MySQLModel(object):
         pass
 
     def delete_role(self, role_name, role_id=False):
-        pass
+        if role_id != False:
+            query="DELETE FROM {roles_table} WHERE id={role_id}".format(
+                roles_table=self._tables['prefix'] + self._tables['roles_table'],
+                role_id=role_id
+            )
+        elif role_name != False:
+            query="DELETE FROM {roles_table} WHERE name={role_name}".format(
+                roles_table=self._tables['prefix'] + self._tables['roles_table'],
+                role_name=role_name
+            )
+        else:
+            raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:delete_role'")
 
     def delete_permission(self, permission_name, permission_id=False):
-        pass
+        if permission_id != False:
+            query="DELETE FROM {permissions_table} WHERE id={permission_id}".format(
+                permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+                permission_id=permission_id
+            )
+        elif permission_name != False:
+            query="DELETE FROM {permissions_table} WHERE name={permission_name}".format(
+                permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+                permission_name=permission_name
+            )
+        else:
+            raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:delete_permission'")
 
     def _table_exists(self, table_name):
         """Check if Tables Exist
