@@ -74,6 +74,10 @@ mysql> describe ph_permission_role;
 | role_id       | int(10) unsigned | NO   | PRI | NULL    |       |
 +---------------+------------------+------+-----+---------+-------+
 2 rows in set (0.00 sec)
+
+SELECT ph_permission_role.role_id FROM ph_permission_role join ph_permissions ON ph_permissions.id=ph_permission_role.permission_id WHERE ph_permissions.id = {permission_id}
+SELECT ph_permission_role.role_id FROM ph_permission_role join ph_permissions ON ph_permissions.id=ph_permission_role.permission_id WHERE ph_permissions.name = {permission_name}
+name
 """
 """
 INSERT INTO ph_rules (name, display_name, description, created_at, updated_at, enabled) VALUES (value1, value2, value3,...)
@@ -97,7 +101,7 @@ class MySQLModel(object):
         'users_table_id': False,
         'roles_table': 'roles',
         'permissions_table': 'permissions',
-        'permission_role_table': 'permission_role',
+        '   ': 'permission_role',
         'role_user_table': 'role_user',
         'permission_user_table': 'permission_user'
     }
@@ -135,11 +139,43 @@ class MySQLModel(object):
         else:
             raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:has_role'")
 
+
+
+
     def has_permission(self, user_id, permission_name, permission_id=False):
         if permission_id != False:
-            query=""
+            query_1="SELECT * FROM {permission_user_table} WHERE user_id={user_id} AND permission_id={permission_id}".format(
+                permission_user_table=self._tables['prefix'] + self._tables['permission_user_table'],
+                user_id=user_id,
+                permission_id=permission_id
+            )
+            query_2="SELECT {permission_role_table}.role_id FROM {permission_role_table} JOIN {permissions_table} ON {permissions_table}.id={permission_role_table}.permission_id WHERE {permissions_table}.id = {permission_id}".format(
+                permission_role_table=self._tables['prefix'] + self._tables['permission_role_table'],
+                permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+                permission_id=permission_id
+            )
+            query_3="SELECT * FROM {role_user_table} WHERE user_id={user_id} AND role_id IN ({roles_ids})".format(
+                role_user_table=self._tables['prefix'] + self._tables['role_user_table'],
+                user_id=user_id,
+                roles_ids=roles_ids
+            )
         elif permission_name != False:
-            query=""
+            query_1="SELECT {permissions_table}.id, {permissions_table}.display_name FROM {permissions_table} JOIN {permission_user_table} ON {permission_user_table}.permission_id = {permissions_table}.id WHERE {permissions_table}.name = {permission_name} AND {permission_user_table}.user_id = {user_id}".format(
+                permission_user_table=self._tables['prefix'] + self._tables['permission_user_table'],
+                permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+                user_id=user_id,
+                permission_name=permission_name
+            )
+            query_2="SELECT {permission_role_table}.role_id FROM {permission_role_table} JOIN {permissions_table} ON {permissions_table}.id={permission_role_table}.permission_id WHERE {permissions_table}.name = {permission_name}".format(
+                permission_role_table=self._tables['prefix'] + self._tables['permission_role_table'],
+                permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+                permission_name=permission_name
+            )
+            query_3="SELECT * FROM {role_user_table} WHERE user_id={user_id} AND role_id IN ({roles_ids})".format(
+                role_user_table=self._tables['prefix'] + self._tables['role_user_table'],
+                user_id=user_id,
+                roles_ids=roles_ids
+            )
         else:
             raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:has_permission'")
 
