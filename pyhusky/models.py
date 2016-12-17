@@ -33,6 +33,8 @@ SELECT ph_roles.* FROM ph_roles join ph_role_user on ph_role_user.role_id = ph_r
 SELECT ph_permissions.* FROM ph_permissions join ph_permission_user on ph_permission_user.permission_id = ph_permissions.id WHERE ph_permission_user.user_id = {user_id}
 SELECT ph_permissions.* FROM ph_permissions join ph_permission_role on ph_permission_role.permission_id = ph_permissions.id WHERE ph_permission_role.role_id IN ({roles})
 
+INSERT INTO ph_roles (name, display_name, description, created_at, updated_at, enabled) VALUES ();
+
 
 mysql> describe ph_role_user;
 +---------+------------------+------+-----+---------+-------+
@@ -283,16 +285,193 @@ class MySQLModel(object):
         )
 
     def add_role(self, role):
-        pass
+
+        role_data={}
+
+        if 'name' in role:
+            raise PyHuskyError("Error! Role name is required 'PyHusky_Model:add_role'")
+            role_data['name'] = role['name']
+        else:
+            role_data['name'] = role['name']
+
+        if 'display_name' in role:
+            role_data['display_name'] = role['display_name']
+        else:
+            role_data['display_name'] = ''
+
+        if 'description' in role:
+            role_data['description'] = role['description']
+        else:
+            role_data['description'] = ''
+
+        if 'created_at' in role:
+            role_data['created_at'] = role['created_at']
+        else:
+            role_data['created_at'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        if 'updated_at' in role:
+            role_data['updated_at'] = role['updated_at']
+        else:
+            role_data['updated_at'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        if 'enabled' in role:
+            role_data['enabled'] = role['enabled']
+        else:
+            role_data['enabled'] = 1
+
+        query="INSERT INTO {roles_table} (name, display_name, description, created_at, updated_at, enabled) VALUES ('{name}', '{display_name}', '{description}', '{created_at}', '{updated_at}', '{enabled}')".format(
+            roles_table=self._tables['prefix'] + self._tables['roles_table'],
+            name=role_data['name'],
+            display_name=role_data['display_name'],
+            description=role_data['description'],
+            created_at=role_data['created_at'],
+            updated_at=role_data['updated_at'],
+            enabled=role_data['enabled']
+        )
 
     def add_roles(self, roles):
-        pass
+
+        query="INSERT INTO {roles_table} (name, display_name, description, created_at, updated_at, enabled) VALUES ".format(
+            roles_table=self._tables['prefix'] + self._tables['roles_table']
+        )
+
+        for role in roles:
+
+            role_data={}
+
+            if 'name' in role:
+                raise PyHuskyError("Error! Roles name is required 'PyHusky_Model:add_roles'")
+                role_data['name'] = role['name']
+            else:
+                role_data['name'] = role['name']
+
+            if 'display_name' in role:
+                role_data['display_name'] = role['display_name']
+            else:
+                role_data['display_name'] = ''
+
+            if 'description' in role:
+                role_data['description'] = role['description']
+            else:
+                role_data['description'] = ''
+
+            if 'created_at' in role:
+                role_data['created_at'] = role['created_at']
+            else:
+                role_data['created_at'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            if 'updated_at' in role:
+                role_data['updated_at'] = role['updated_at']
+            else:
+                role_data['updated_at'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            if 'enabled' in role:
+                role_data['enabled'] = role['enabled']
+            else:
+                role_data['enabled'] = 1
+
+            query += "('{name}', '{display_name}', '{description}', '{created_at}', '{updated_at}', '{enabled}'),".format(
+                name=role_data['name'],
+                display_name=role_data['display_name'],
+                description=role_data['description'],
+                created_at=role_data['created_at'],
+                updated_at=role_data['updated_at'],
+                enabled=role_data['enabled']
+            )
+
 
     def add_permission(self, permission):
-        pass
+        permission_data={}
+
+        if 'name' in permission:
+            raise PyHuskyError("Error! Permission name is required 'PyHusky_Model:add_permission'")
+            permission_data['name'] = permission['name']
+        else:
+            permission_data['name'] = permission['name']
+
+        if 'display_name' in permission:
+            permission_data['display_name'] = permission['display_name']
+        else:
+            permission_data['display_name'] = ''
+
+        if 'description' in permission:
+            permission_data['description'] = permission['description']
+        else:
+            permission_data['description'] = ''
+
+        if 'created_at' in permission:
+            permission_data['created_at'] = permission['created_at']
+        else:
+            permission_data['created_at'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        if 'updated_at' in permission:
+            permission_data['updated_at'] = permission['updated_at']
+        else:
+            permission_data['updated_at'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        if 'enabled' in permission:
+            permission_data['enabled'] = permission['enabled']
+        else:
+            permission_data['enabled'] = 1
+
+        query="INSERT INTO {permissions_table} (name, display_name, description, created_at, updated_at, enabled) VALUES ('{name}', '{display_name}', '{description}', '{created_at}', '{updated_at}', '{enabled}')".format(
+            permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+            name=permission_data['name'],
+            display_name=permission_data['display_name'],
+            description=permission_data['description'],
+            created_at=permission_data['created_at'],
+            updated_at=permission_data['updated_at'],
+            enabled=permission_data['enabled']
+        )
 
     def add_permissions(self, permissions):
-        pass
+        query="INSERT INTO {permissions_table} (name, display_name, description, created_at, updated_at, enabled) VALUES ".format(
+            permissions_table=self._tables['prefix'] + self._tables['permissions_table']
+        )
+
+        for permission in permissions:
+
+            permission_data={}
+
+            if 'name' in permission:
+                raise PyHuskyError("Error! Roles name is required 'PyHusky_Model:add_permissions'")
+                permission_data['name'] = permission['name']
+            else:
+                permission_data['name'] = permission['name']
+
+            if 'display_name' in permission:
+                permission_data['display_name'] = permission['display_name']
+            else:
+                permission_data['display_name'] = ''
+
+            if 'description' in permission:
+                permission_data['description'] = permission['description']
+            else:
+                permission_data['description'] = ''
+
+            if 'created_at' in permission:
+                permission_data['created_at'] = permission['created_at']
+            else:
+                permission_data['created_at'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            if 'updated_at' in permission:
+                permission_data['updated_at'] = permission['updated_at']
+            else:
+                permission_data['updated_at'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            if 'enabled' in permission:
+                permission_data['enabled'] = permission['enabled']
+            else:
+                permission_data['enabled'] = 1
+
+            query += "('{name}', '{display_name}', '{description}', '{created_at}', '{updated_at}', '{enabled}'),".format(
+                name=permission_data['name'],
+                display_name=permission_data['display_name'],
+                description=permission_data['description'],
+                created_at=permission_data['created_at'],
+                updated_at=permission_data['updated_at'],
+                enabled=permission_data['enabled']
+            )
 
     def update_role(self, role, where):
         pass
