@@ -43,6 +43,9 @@ mysql> describe ph_role_user;
 | user_id | int(10) unsigned | NO   | PRI | NULL    |       |
 | role_id | int(10) unsigned | NO   | PRI | NULL    |       |
 +---------+------------------+------+-----+---------+-------+
+DELETE FROM ph_role_user WHERE role_id={role_id} AND user_id={user_id}
+
+
 2 rows in set (0.00 sec)
 mysql> select users.name, programs.name from linker
     -> join users on users.id = linker.user_id
@@ -74,6 +77,7 @@ mysql> describe ph_permission_user;
 | user_id       | int(10) unsigned | NO   | PRI | NULL    |       |
 +---------------+------------------+------+-----+---------+-------+
 2 rows in set (0.00 sec)
+DELETE FROM ph_permission_user WHERE permission_id={permission_id} AND user_id={user_id}
 
 mysql> describe ph_permission_role;
 +---------------+------------------+------+-----+---------+-------+
@@ -476,22 +480,78 @@ class MySQLModel(object):
     def update_role(self, role, where):
         pass
 
-    def update_permissions(self, role, where):
+    def update_permission(self, role, where):
         pass
 
-    def update_user_roles(self, user_id, roles):
+    def update_user_roles(self, user_id, roles_data):
         pass
 
-    def update_user_permissions(self, user_id, permissions):
+    def update_user_permissions(self, user_id, permissions_data):
         pass
 
-    def delete_user_role(self, user_id, role_name, role_id=False):
-        pass
+    def remove_user_role(self, user_id, role_name, role_id=False):
+        """Remove a User Role
 
-    def delete_user_permission(self, user_id, permission_name, permission_id=False):
-        pass
+            Args:
+                user_id: User ID
+                role_name: Role Name
+                role_id: Role ID
+        """
+        if role_name != False:
+            query_1="SELECT * FROM {roles_table} WHERE name={role_name}".format(
+                roles_table=self._tables['prefix'] + self._tables['roles_table'],
+                role_name=role_name
+            )
+            query_2="DELETE FROM {role_user_table} WHERE role_id={role_id} AND user_id={user_id}".format(
+                role_user_table=self._tables['prefix'] + self._tables['role_user_table'],
+                role_id=role_id,
+                user_id=user_id
+            )
+        elif role_id != False:
+            query="DELETE FROM {permission_user_table} WHERE permission_id={permission_id} AND user_id={user_id}".format(
+                permission_user_table=self._tables['prefix'] + self._tables['permission_user_table'],
+                permission_id=permission_id,
+                user_id=user_id
+            )
+        else:
+            raise PyHuskyError("Error! Role Name or Role ID Required 'PyHusky_Model:remove_user_role'")
+
+
+    def remove_user_permission(self, user_id, permission_name, permission_id=False):
+        """Remove a User Permission
+
+            Args:
+                user_id: User ID
+                permission_name: Permission Name
+                permission_id: Permission ID
+        """
+        if permission_name != False:
+            query_1="SELECT * FROM {permissions_table} WHERE name={permission_name}".format(
+                permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
+                permission_name=permission_name
+            )
+            query_2="DELETE FROM {permission_user_table} WHERE permission_id={permission_id} AND user_id={user_id}".format(
+                permission_user_table=self._tables['prefix'] + self._tables['permission_user_table'],
+                permission_id=permission_id,
+                user_id=user_id
+            )
+        elif permission_id != False:
+            query="DELETE FROM {permission_user_table} WHERE permission_id={permission_id} AND user_id={user_id}".format(
+                permission_user_table=self._tables['prefix'] + self._tables['permission_user_table'],
+                permission_id=permission_id,
+                user_id=user_id
+            )
+        else:
+            raise PyHuskyError("Error! Role Name or Role ID Required 'PyHusky_Model:remove_user_permission'")
+
 
     def delete_role(self, role_name, role_id=False):
+        """Delete a Role
+
+            Args:
+                role_name: Role Name
+                role_id: Role ID
+        """
         if role_id != False:
             query="DELETE FROM {roles_table} WHERE id={role_id}".format(
                 roles_table=self._tables['prefix'] + self._tables['roles_table'],
@@ -506,6 +566,12 @@ class MySQLModel(object):
             raise PyHuskyError("Error! Invalid Method Parameters Submitted 'PyHusky_Model:delete_role'")
 
     def delete_permission(self, permission_name, permission_id=False):
+        """Delete a Permission
+
+            Args:
+                permission_name: Permission Name
+                permission_id: Permission ID
+        """
         if permission_id != False:
             query="DELETE FROM {permissions_table} WHERE id={permission_id}".format(
                 permissions_table=self._tables['prefix'] + self._tables['permissions_table'],
